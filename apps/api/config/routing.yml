@@ -1,3 +1,19 @@
+tag_list:
+  url: /tag/list.json
+  param: { module: tag, action: list, sf_format: json }
+  requirements: { sf_method: [get] }
+tag_assign:
+  url: /tag/assign.json
+  param: { module: tag, action: assign, sf_format: json }
+  requirements: { sf_method: [get] }
+tag_byentity:
+  url: /tag/byentity.json
+  param: { module: tag, action: byEntity, sf_format: json }
+  requirements: { sf_method: [get] }
+tag_topic:
+  url: /tag/topic.json
+  param: { module: tag, action: topic, sf_format: json }
+  requirements: { sf_method: [get] }
 communityconfig_search:
   url: /communityconfig/search.json
   param: { module: communityconfig, action: search, sf_format: json }
