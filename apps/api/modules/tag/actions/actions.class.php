@@ -16,11 +16,13 @@
  */
 class tagActions extends opJsonApiActions
 {
+  const API_LIMIT = 300;//FIXME
+  
   public function executeByEntity(sfWebRequest $req){
     $this->forward400If('' === (string)$req['entity'], 'entity not specified.');
 
     $tag_list = Doctrine_Query::create()->select('t.tag')->from("Tag t")
-      ->where("entity = ?",$req['entity'])->execute(array(), Doctrine_Core::HYDRATE_NONE);
+      ->where("entity = ?",$req['entity'])->limit(API_LIMIT)->execute(array(), Doctrine_Core::HYDRATE_NONE);
     $result = array();
     foreach($tag_list as $tag){
       $result[] = $tag[0];
@@ -32,8 +34,7 @@ class tagActions extends opJsonApiActions
   public function executeTopic(sfWebRequest $req)
   {
     $this->forward400If('' === (string)$req['tag'], 'tag not specified.');
-
-    $query = Doctrine_Query::create()->from("Tag t")->where("t.tag = ?",$req['tag'])->andWhere("entity like 'T%'");
+    $query = Doctrine_Query::create()->from("Tag t")->where("t.tag = ?",$req['tag'])->andWhere("entity like 'T%'")->orderBy("t.id desc")->limit(API_LIMIT);
     $tag_list = $query->execute()->toArray();
     $tag_list_array = array();
     foreach($tag_list as $tag){
@@ -41,7 +42,7 @@ class tagActions extends opJsonApiActions
     }
 
     if($req['tag_minus']){
-      $query = Doctrine_Query::create()->from("Tag t")->where("t.tag = ?",$req['tag_minus'])->andWhere("entity like 'T%'");
+      $query = Doctrine_Query::create()->from("Tag t")->where("t.tag = ?",$req['tag_minus'])->andWhere("entity like 'T%'")->orderBy("t.id desc")->limit(API_LIMIT);
       $minus_tag_list = $query->execute()->toArray();
       $minus_tag_list_array = array();
       foreach($minus_tag_list as $minus_tag){
@@ -49,7 +50,11 @@ class tagActions extends opJsonApiActions
       }
       $tag_list_array = array_diff($tag_list_array,$minus_tag_list_array);
     }
+
     $result = array_values($tag_list_array);
+    if((int)$req['count'] > 0){
+      $result = array_slice($result, 0, (int)$req['count']);
+    }
     
     $this->getRequest()->setParameter('target_id', $result);
     $this->getRequest()->setParameter('target', 'topic');
